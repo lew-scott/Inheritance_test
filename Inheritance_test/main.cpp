@@ -47,10 +47,6 @@ public:
 		{
 			s.deductedHP(damage);
 			//std::cout << name << " does " << damage << " damage to " << s.getName() << std::endl;
-			if (s.isAlive() == false && s.getName() != "Hades, Lord of the Underworld")
-			{
-				std::cout << s.getName() << " falls" << std::endl;
-			}
 		}
 
 	}
@@ -121,15 +117,19 @@ public:
 		}
 		sp = 0;
 	}
-	void increaseSP()
+	void attack(Fighter& s, int x)
 	{
-		sp += str;
+		Fighter::attack(s, x);
+		if (sp < 10)
+		{
+			sp += str;
+		}
 	}
 	int getSp()
 	{
 		return sp;
 	}
-protected:
+private:
 	int sp = 0;
 };
 class Boss : public Fighter
@@ -138,6 +138,14 @@ public:
 	Boss(const std::string& name, const std::string& gender, int hp, int str, int def)
 		:
 		Fighter(name, gender,hp,str, def){};
+	void attack(Fighter& s, int x)
+	{
+		Fighter::attack(s, x);
+		if (sp < 10)
+		{
+			sp += 5;
+		}
+	}
 	void useSuper(Fighter f[], int numFighters, Healer h[], int numHealers, int diceRoll)
 	{
 		int damage = int(90 + 3 * diceRoll / 2);
@@ -168,10 +176,6 @@ public:
 		sp = 0;
 
 	}
-	void increaseSP()
-	{
-		sp += 5;
-	}
 	int getSp()
 	{
 		return sp;
@@ -182,113 +186,116 @@ private:
 
 int main()
 {
+	int wins =0;
 
-	Fighter Ares("Ares", "male", 650, 22, 15);
-	Fighter Athena("Athena", "f", 680, 18, 20);
-	Fighter Hephaestus("Hephaestus", "m", 750, 11, 20);
-	Fighter Artemis("Artemis", "m", 650, 30, 12);
-	Healer Apollo("Apollo", "m", 570, 7, 12);
-	Healer Persephone("Persephone", "f", 550, 4, 10);
-	Boss boss("Hades, Lord of the Underworld", "m", 5200, 7, 40);
-
-	const int numFighters = 4;
-	const int numHealers = 2;
-	int killer = -1;
-	int totalChampions = numFighters + numHealers;
-	Fighter f[numFighters] = { Ares, Athena, Hephaestus, Artemis };
-	Healer h[numHealers] = { Apollo,Persephone };
-	Dice d;
-	bool Fighting = true;
-
-	while (Fighting == true)
+	for (int i = 0; i < 500; i++)
 	{
-		for (int i = 0; i < numFighters; i++)
-		{
-			if (f[i].isAlive() == true)
-			{
-				f[i].attack(boss, d.Roll_the_dice(2));
-				if (boss.isAlive() != true)
-				{
-					killer = i;
-					break;
-				}
-			}
-		}
-		if (boss.isAlive() == false)
-		{
-			Fighting = false;
-			std::cout << boss.getName() << "falls... and " << f[killer].getName() << " dealt the killing blow!" << std::endl;
-			break;
-		}
+		Fighter Ares("Ares", "male", 670, 23, 15);
+		Fighter Athena("Athena", "f", 680, 20, 20);
+		Fighter Hephaestus("Hephaestus", "m", 750, 15, 20);
+		Fighter Artemis("Artemis", "m", 640, 30, 12);
+		Healer Apollo("Apollo", "m", 600, 7, 12);
+		Healer Persephone("Persephone", "f", 590, 4, 10);
+		Boss boss("Hades, Lord of the Underworld", "m", 4550, 7, 40);
 
-		for (int i = 0; i < numHealers; i++)
+		const int numFighters = 4;
+		const int numHealers = 2;
+		int killer = -1;
+		int totalChampions = numFighters + numHealers;
+		Fighter f[numFighters] = { Ares, Athena, Hephaestus, Artemis };
+		Healer h[numHealers] = { Apollo,Persephone };
+		Dice d;
+		bool Fighting = true;
+
+		while (Fighting == true)
 		{
-			if (h[i].isAlive() == true)
+			for (int i = 0; i < numFighters; i++)
 			{
-				if (h[i].getSp() >= 12)
+				if (f[i].isAlive() == true)
 				{
-					h[i].heal(f, numFighters, h, numHealers, d.Roll_the_dice(3));
-				}
-				else
-				{
-					h[i].attack(boss, d.Roll_the_dice(2));
+					f[i].attack(boss, d.Roll_the_dice(2));
 					if (boss.isAlive() != true)
 					{
 						killer = i;
 						break;
 					}
-					h[i].increaseSP();
 				}
-
 			}
-		}
-		if (boss.isAlive() == false)
-		{
-			Fighting = false;
-			std::cout << boss.getName() << " falls... and " << f[killer].getName() << " dealt the killing blow!" << std::endl;
-			break;
-		}
+			if (boss.isAlive() == false)
+			{
+				Fighting = false;
+				std::cout << boss.getName() << "falls... and " << f[killer].getName() << " dealt the killing blow!" << std::endl;
+				break;
+			}
 
-		if (boss.getSp() == 10)
-		{
-			boss.useSuper(f, numFighters, h, numHealers, d.Roll_the_dice(2));
-		}
-		else
-		{
+			for (int i = 0; i < numHealers; i++)
+			{
+				if (h[i].isAlive() == true)
+				{
+					if (h[i].getSp() >= 12)
+					{
+						h[i].heal(f, numFighters, h, numHealers, d.Roll_the_dice(3));
+					}
+					else
+					{
+						h[i].attack(boss, d.Roll_the_dice(2));
+						if (boss.isAlive() != true)
+						{
+							killer = i;
+							break;
+						}
+					}
+
+				}
+			}
+			if (boss.isAlive() == false)
+			{
+				Fighting = false;
+				std::cout << boss.getName() << " falls... and " << f[killer].getName() << " dealt the killing blow!" << std::endl;
+				break;
+			}
+
+			if (boss.getSp() == 10)
+			{
+				boss.useSuper(f, numFighters, h, numHealers, d.Roll_the_dice(2));
+			}
+			else
+			{
+				for (int i = 0; i < numFighters; i++)
+				{
+					boss.attack(f[i], d.Roll_the_dice(2));
+				}
+				for (int i = 0; i < numHealers; i++)
+				{
+					boss.attack(h[i], d.Roll_the_dice(2));
+				}
+			}
+
+			int championDeaths = 0;
 			for (int i = 0; i < numFighters; i++)
 			{
-				boss.attack(f[i], d.Roll_the_dice(2));
+				if (f[i].isAlive() == false)
+				{
+					championDeaths++;
+				}
 			}
 			for (int i = 0; i < numHealers; i++)
 			{
-				boss.attack(h[i], d.Roll_the_dice(2));
+				if (h[i].isAlive() == false)
+				{
+					championDeaths++;
+				}
 			}
-			boss.increaseSP();
-		}
-
-		int championDeaths = 0;
-		for (int i = 0; i < numFighters; i++)
-		{
-			if (f[i].isAlive() == false)
+			if (championDeaths == totalChampions)
 			{
-				championDeaths++;
+				Fighting = false;
+				wins++;
+				std::cout << boss.getName() << " is victorious!" << std::endl;
 			}
-		}
-		for (int i = 0; i < numHealers; i++)
-		{
-			if (h[i].isAlive() == false)
-			{
-				championDeaths++;
-			}
-		}
-		if (championDeaths == totalChampions)
-		{
-			Fighting = false;
-			std::cout << boss.getName() << " is victorious!" << std::endl;
 		}
 	}
-
-
+	std::cout << "Hades, Lord of the Underworld won " << wins << " times" << std::endl;
+	std::cout << "The Olympians won " << 500 - wins << " times" << std::endl;
 	while (!_kbhit()) {};
 	return 0;
 }
